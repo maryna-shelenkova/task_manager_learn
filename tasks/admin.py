@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import Task, SubTask, Category
+from django.db.models import QuerySet
+from tasks.models import Task, SubTask, Category
 
 
-class SubTaskInline(admin.TabularInline):  # Можно заменить на admin.StackedInline по желанию
+class SubTaskInline(admin.TabularInline):
     model = SubTask
-    extra = 1  # Количество пустых форм по умолчанию
-
+    extra = 1
 
 
 @admin.register(Task)
@@ -21,11 +21,11 @@ class TaskAdmin(admin.ModelAdmin):
     short_title.short_description = 'Title'
 
 
-
 @admin.action(description='Отметить выбранные подзадачи как Done')
-def mark_as_done(modeladmin, request, queryset):
+def mark_as_done(modeladmin, request, queryset: QuerySet):
     updated = queryset.update(status='Done')
     modeladmin.message_user(request, f'Обновлено {updated} подзадач(и) в статус "Done".')
+
 
 @admin.register(SubTask)
 class SubTaskAdmin(admin.ModelAdmin):
@@ -41,5 +41,4 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
     ordering = ['name']
-
 

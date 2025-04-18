@@ -3,7 +3,7 @@ from django.db.models import QuerySet
 from tasks.models import Task, SubTask, Category
 
 
-class SubTaskInline(admin.TabularInline):  # Можно заменить на admin.StackedInline
+class SubTaskInline(admin.TabularInline):
     model = SubTask
     extra = 1
 

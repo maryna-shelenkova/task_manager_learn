@@ -116,10 +116,16 @@ class Category(models.Model):
 
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ('title', 'status', 'created_at', 'deadline')
+    list_display = ('short_title', 'status', 'created_at', 'deadline')
     search_fields = ('title', 'description')
     list_filter = ('status', 'created_at', 'categories')
     ordering = ['-created_at']
+
+    def short_title(self, obj):
+        return obj.title[:10] + '...' if len(obj.title) > 10 else obj.title
+
+    short_title.short_description = 'Title'
+
 
 
 class SubTaskAdmin(admin.ModelAdmin):
@@ -127,6 +133,13 @@ class SubTaskAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description')
     list_filter = ('status', 'created_at')
     ordering = ['-created_at']
+    actions = ['mark_as_done']
+
+    @admin.action(description='Отметить как выполненные')
+    def mark_as_done(self, request, queryset):
+        updated = queryset.update(status='Done')
+        self.message_user(request, f'{updated} подзадач отмечено как выполненные.')
+
 
 
 class CategoryAdmin(admin.ModelAdmin):

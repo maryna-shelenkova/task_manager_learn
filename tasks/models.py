@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils import timezone
+from datetime import datetime
 
 status_choices = [
     ("New", "New"),
@@ -7,7 +9,6 @@ status_choices = [
     ("Blocked", "Blocked"),
     ("Done", "Done"),
 ]
-
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -22,11 +23,11 @@ class Category(models.Model):
 
 
 class Task(models.Model):
-    title = models.CharField(max_length=50, unique_for_date="deadline")
+    title = models.CharField(max_length=255)
     description = models.TextField()
-    categories = models.ManyToManyField(Category)
-    status = models.CharField(max_length=100, choices=status_choices, default="New")
+    status = models.CharField(max_length=50)
     deadline = models.DateTimeField()
+    categories = models.ManyToManyField(Category)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -37,6 +38,7 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
 
 
 class SubTask(models.Model):
@@ -55,7 +57,6 @@ class SubTask(models.Model):
 
     def __str__(self):
         return self.title
-
 
 
 

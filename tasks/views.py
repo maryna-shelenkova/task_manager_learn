@@ -7,21 +7,17 @@ from django.db.models import Count, Q
 from .models import Task
 from .serializers import TaskSerializer
 
-
-# Задание 2 — Список всех задач
 class TaskListView(generics.ListAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
 
 
-# Задание 2 — Получение задачи по ID
 class TaskDetailView(generics.RetrieveAPIView):
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
     lookup_field = 'id'
 
 
-# Задание 3 — Агрегирующий эндпоинт
 class TaskStatsView(APIView):
     def get(self, request):
         total_tasks = Task.objects.count()

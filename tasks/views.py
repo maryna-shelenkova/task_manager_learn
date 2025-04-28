@@ -1,32 +1,60 @@
-from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.utils.timezone import now
-from django.db.models import Count, Q
-
-from .models import Task
-from .serializers import TaskSerializer
-
-class TaskListView(generics.ListAPIView):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
+from django.core.paginator import Paginator
+from django.http import JsonResponse
+from .models import Task, SubTask
+from datetime import datetime
 
 
-class TaskDetailView(generics.RetrieveAPIView):
-    queryset = Task.objects.all()
-    serializer_class = TaskSerializer
-    lookup_field = 'id'
+
+def tasks_by_weekday(request):
+    weekday = request.GET.get('weekday', None)
+
+    if weekday:
+        weekday_num = datetime.strptime(weekday, '%A').weekday()  # 0 - Monday, 6 - Sunday
+        tasks = Task.objects.filter(deadline__week_day=weekday_num + 1)  # В Django неделя начинается с воскресенья (1)
+    else:
+        tasks = Task.objects.all()
 
 
-class TaskStatsView(APIView):
-    def get(self, request):
-        total_tasks = Task.objects.count()
-        tasks_by_status = Task.objects.values('status').annotate(count=Count('id'))
-        overdue_tasks = Task.objects.filter(deadline__lt=now(), status__in=["New", "In Progress", "Pending", "Blocked"]).count()
+    task_data = [
+        {"title": task.title, "description": task.description, "status": task.status, "deadline": task.deadline} for
+        task in tasks]
+    return JsonResponse(task_data, safe=False)
 
-        return Response({
-            'total_tasks': total_tasks,
-            'tasks_by_status': {item['status']: item['count'] for item in tasks_by_status},
-            'overdue_tasks': overdue_tasks,
-        })
+
+def subtasks_list(request):
+
+    subtasks = SubTask.objects.all().order_by('-created_at')
+
+    paginator = Paginator(subtasks, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    subtask_data = [{"title": subtask.title, "description": subtask.description, "status": subtask.status,
+                     "deadline": subtask.deadline} for subtask in page_obj]
+    return JsonResponse(subtask_data, safe=False)
+
+
+def subtasks_by_task_and_status(request):
+    task_title = request.GET.get('task_title', None)
+    status = request.GET.get('status', None)
+
+
+    subtasks = SubTask.objects.all()
+
+    if task_title:
+        subtasks = subtasks.filter(task__title__icontains=task_title)
+
+    if status:
+        subtasks = subtasks.filter(status=status)
+
+    paginator = Paginator(subtasks, 5)
+
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+
+    subtask_data = [{"title": subtask.title, "description": subtask.description, "status": subtask.status,
+                     "deadline": subtask.deadline} for subtask in page_obj]
+    return JsonResponse(subtask_data, safe=False)
 

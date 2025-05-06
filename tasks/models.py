@@ -11,7 +11,7 @@ status_choices = [
 ]
 
 class Category(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
 
     class Meta:
         db_table = "task_manager_category"

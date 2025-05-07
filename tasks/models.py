@@ -1,62 +1,44 @@
 from django.db import models
 from django.utils import timezone
-from datetime import datetime
 
-status_choices = [
-    ("New", "New"),
-    ("In Progress", "In Progress"),
-    ("Pending", "Pending"),
-    ("Blocked", "Blocked"),
-    ("Done", "Done"),
-]
+
+class CategoryManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
 
-    class Meta:
-        db_table = "task_manager_category"
-        verbose_name = "Category"
-        unique_together = ("name",)
+    objects = CategoryManager()
+    all_objects = models.Manager()
+
+    def delete(self, using=None, keep_parents=False):
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
 
     def __str__(self):
         return self.name
 
 
+from django.utils import timezone
+
 class Task(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField()
-    status = models.CharField(max_length=50)
-    deadline = models.DateTimeField()
-    categories = models.ManyToManyField(Category)
+    description = models.TextField(blank=True, null=True)
+    category = models.ForeignKey(Category, related_name='tasks', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "task_manager_task"
-        verbose_name = "Task"
-        ordering = ("-created_at",)
-        unique_together = ("title", "deadline")
+    deadline = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.title
 
 
 
-class SubTask(models.Model):
-    title = models.CharField(max_length=50)
-    description = models.TextField()
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='subtasks')
-    status = models.CharField(max_length=100, choices=status_choices, default="New")
-    deadline = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
-        db_table = "task_manager_subtask"
-        ordering = ("-created_at",)
-        verbose_name = "SubTask"
-        unique_together = ("title", "task")
-
-    def __str__(self):
-        return self.title
 
 
 

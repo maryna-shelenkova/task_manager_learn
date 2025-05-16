@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 from datetime import datetime
+from django.contrib.auth.models import User
+
 
 status_choices = [
     ("New", "New"),
@@ -29,6 +31,7 @@ class Task(models.Model):
     deadline = models.DateTimeField()
     categories = models.ManyToManyField(Category)
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
 
     class Meta:
         db_table = "task_manager_task"

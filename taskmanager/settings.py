@@ -1,11 +1,13 @@
 from datetime import timedelta
 from pathlib import Path
 import os
+from decouple import config
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-kii%yafs6e0-qfuw1m1(zeehcb)unvs1*q=&892nu8j5cty!lm'
+SECRET_KEY = config('SECRET_KEY')
 
 DEBUG = True
 
@@ -21,6 +23,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'tasks',
+    'rest_framework_simplejwt.token_blacklist',
+
 ]
 
 MIDDLEWARE = [
@@ -170,6 +174,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'TOKEN_TYPE_CLAIM': 'token_type',
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+    'BLACKLIST_AFTER_ROTATION': True,
     'JTI_CLAIM': 'jti',
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
 }

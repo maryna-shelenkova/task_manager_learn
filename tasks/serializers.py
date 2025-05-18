@@ -34,6 +34,15 @@ class TaskSerializer(serializers.ModelSerializer):
 class SubTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubTask
-        fields = ['id', 'title', 'description', 'status', 'deadline', 'task']
+        fields = ['id', 'title', 'description', 'status', 'deadline', 'task', 'owner']
+        read_only_fields = ['owner']
+
+
+class TaskStatisticsSerializer(serializers.Serializer):
+    total_tasks = serializers.IntegerField()
+    completed_tasks = serializers.IntegerField()
+    pending_tasks = serializers.IntegerField()
+
+
 
 

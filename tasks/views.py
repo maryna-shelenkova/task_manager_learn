@@ -1,12 +1,14 @@
 from rest_framework import generics, filters, viewsets
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, permissions
 from .models import Task, SubTask, Category
 from .serializers import TaskSerializer, SubTaskSerializer, CategorySerializer
 from .permissions import IsOwner
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Task
+from .serializers import TaskStatisticsSerializer
 
 class CategoryListCreate(generics.ListCreateAPIView):
     queryset = Category.objects.all()
@@ -25,7 +27,6 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 class TaskListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Task.objects.all()
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter)
@@ -34,8 +35,12 @@ class TaskListCreateAPIView(generics.ListCreateAPIView):
     ordering_fields = ['created_at']
     ordering = ['-created_at']
 
+    def get_queryset(self):
+        return Task.objects.filter(owner=self.request.user)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
+
 
 class TaskRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
@@ -44,7 +49,6 @@ class TaskRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SubTaskListCreateAPIView(generics.ListCreateAPIView):
-    queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = (DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter)
@@ -52,6 +56,14 @@ class SubTaskListCreateAPIView(generics.ListCreateAPIView):
     search_fields = ['title', 'description']
     ordering_fields = ['created_at']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        return SubTask.objects.filter(owner=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
 
 class TaskCreateView(generics.CreateAPIView):
     queryset = Task.objects.all()
@@ -61,10 +73,30 @@ class TaskCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+
+class TaskStatisticsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TaskStatisticsSerializer
+
+    def get(self, request):
+        total = Task.objects.filter(owner=request.user).count()
+        done = Task.objects.filter(owner=request.user, status='Done').count()
+        pending = Task.objects.filter(owner=request.user).exclude(status='Done').count()
+
+        data = {
+            'total_tasks': total,
+            'completed_tasks': done,
+            'pending_tasks': pending,
+        }
+        return Response(data)
+
+
+
 class SubTaskRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SubTask.objects.all()
     serializer_class = SubTaskSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwner]
+
 
 
 class TaskStatisticsAPIView(generics.GenericAPIView):
@@ -81,6 +113,7 @@ class TaskStatisticsAPIView(generics.GenericAPIView):
             'pending_tasks': pending_tasks,
         }
         return Response(data)
+
 
 
 

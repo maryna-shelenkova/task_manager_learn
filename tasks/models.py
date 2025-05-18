@@ -51,6 +51,8 @@ class SubTask(models.Model):
     status = models.CharField(max_length=100, choices=status_choices, default="New")
     deadline = models.DateTimeField()
     created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subtasks', null=True)
+
 
     class Meta:
         db_table = "task_manager_subtask"

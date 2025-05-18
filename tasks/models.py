@@ -27,7 +27,7 @@ class Category(models.Model):
 class Task(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, choices=status_choices, default="New")
     deadline = models.DateTimeField()
     categories = models.ManyToManyField(Category)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -41,6 +41,7 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
 
 
 

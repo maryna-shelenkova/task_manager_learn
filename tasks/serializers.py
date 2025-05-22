@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import Task, SubTask, Category
+from django.contrib.auth.models import User
+
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,4 +38,11 @@ class SubTaskSerializer(serializers.ModelSerializer):
         model = SubTask
         fields = ['id', 'title', 'description', 'status', 'deadline', 'task']
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'password', 'email']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
 

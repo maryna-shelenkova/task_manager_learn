@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'tasks',
-    'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_simplejwt',
 
 ]
 
@@ -174,7 +174,9 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': 'user_id',
     'TOKEN_TYPE_CLAIM': 'token_type',
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-    'BLACKLIST_AFTER_ROTATION': True,
     'JTI_CLAIM': 'jti',
     'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@taskmanager.local'
